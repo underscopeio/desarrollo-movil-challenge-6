@@ -2,7 +2,7 @@ import React from 'react'
 import { Button, StyleSheet, Text, View } from 'react-native'
 import { AuthSession } from 'expo'
 
-const FB_APP_ID = 'YOUR_APP_ID'
+const SPOTIFY_CLIENT_ID = 'bb223824c29844c7999ac5bc0ab7fdff'
 
 export default class App extends React.Component {
   state = {
