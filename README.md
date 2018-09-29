@@ -1,4 +1,4 @@
-## Challenge 4 del curso de Desarrollo Móvil de Coderhouse
+## Challenge 6 del curso de Desarrollo Móvil de Coderhouse
 
 Para poder resolver este challenge seguir los siguientes pasos
 
