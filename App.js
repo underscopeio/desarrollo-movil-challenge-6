@@ -1,15 +1,19 @@
 import React from 'react'
 import { Button, StyleSheet, Text, View } from 'react-native'
 import { AuthSession } from 'expo'
-import { getUserArtists } from './spotify-api-client'
+import { getFavoriteArtistAsync } from './cliente-api-spotify'
+import ArtistaFavorito from './ArtistaFavorito'
+import { ScrollView } from './node_modules/react-native-gesture-handler'
 
-const SPOTIFY_CLIENT_ID = 'bb223824c29844c7999ac5bc0ab7fdff'
+const CLIENT_ID = 'f7eaccf9adea456c8929b07206b0d40d'
+const SPOTIFY_CLIENT_ID = CLIENT_ID
 const SECURE_STORE_ACCESS_TOKEN_KEY = 'spotifyAccessToken'
 
 export default class App extends React.Component {
   state = {
     result: null,
     accessToken: null,
+    artists: []
   }
 
   async componentDidMount() {
@@ -20,12 +24,14 @@ export default class App extends React.Component {
   }
 
   _handleAuthButtonPress = async () => {
+    const scopes = ['user-follow-read']
     const redirectUrl = AuthSession.getRedirectUrl()
     const result = await AuthSession.startAsync({
       authUrl:
         `https://accounts.spotify.com/authorize?response_type=token` +
         `&client_id=${SPOTIFY_CLIENT_ID}` +
-        `&redirect_uri=${encodeURIComponent(redirectUrl)}`,
+        `&redirect_uri=${encodeURIComponent(redirectUrl)}` +
+        `&scope=${encodeURIComponent(scopes.join(' '))}`,
     })
 
     await this.handleAuthResult(result)
@@ -43,13 +49,29 @@ export default class App extends React.Component {
     this.setState({ accessToken })
   }
 
+  _handleGetArtistsPress = () => {
+    getFavoriteArtistAsync(this.state.accessToken)
+      .then(artists => this.setState({ artists }))
+  }
+
   render() {
-    const { accessToken } = this.state
+    const { accessToken, artists } = this.state
 
     return (
       <View style={styles.container}>
-        {!accessToken && <Button title="Open Spotify Auth" onPress={this._handleAuthButtonPress} />}
-        {accessToken && <Button title="Get user artists" onPress={this._handleGetArtistsPress} />}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
+        >
+          {
+            artists && artists.map((artist, index) => <ArtistaFavorito artista={artist} key={index} />)
+          }
+        </ScrollView>
+        <View style={styles.buttonsContainer}>
+          {accessToken && <Button title="Open Spotify Auth" onPress={this._handleAuthButtonPress} />}
+          {accessToken && <Button title="Get user artists" onPress={this._handleGetArtistsPress} />}
+        </View>
       </View>
     )
   }
@@ -61,4 +83,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  scrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollViewContent: {
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 50,
+  },
+  buttonsContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    minHeight: 45,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#000000C0',
+  }
 })
