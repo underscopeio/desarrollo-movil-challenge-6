@@ -1,8 +1,9 @@
 import React from 'react'
 import { Button, StyleSheet, Text, View } from 'react-native'
 import { AuthSession } from 'expo'
-import { getFavoriteArtistAsync } from './cliente-api-spotify'
+import { getFavoriteArtistAsync, getFavouriteAlbumsAsync } from './cliente-api-spotify'
 import ArtistaFavorito from './ArtistaFavorito'
+import FavouriteAlbum from './FavouriteAlbum'
 import { ScrollView } from './node_modules/react-native-gesture-handler'
 
 const CLIENT_ID = 'f7eaccf9adea456c8929b07206b0d40d'
@@ -13,7 +14,9 @@ export default class App extends React.Component {
   state = {
     result: null,
     accessToken: null,
-    artists: []
+    artists: [],
+    albums: [],
+    itemData: []
   }
 
   async componentDidMount() {
@@ -24,7 +27,7 @@ export default class App extends React.Component {
   }
 
   _handleAuthButtonPress = async () => {
-    const scopes = ['user-follow-read']
+    const scopes = ['user-follow-read', 'user-library-read']
     const redirectUrl = AuthSession.getRedirectUrl()
     const result = await AuthSession.startAsync({
       authUrl:
@@ -51,11 +54,16 @@ export default class App extends React.Component {
 
   _handleGetArtistsPress = () => {
     getFavoriteArtistAsync(this.state.accessToken)
-      .then(artists => this.setState({ artists }))
+      .then(artists => this.setState({ itemData: artists }))
+  }
+
+  _handleGetAlbumsPress = () => {
+    getFavouriteAlbumsAsync(this.state.accessToken)
+      .then(albums => this.setState({ itemData: albums }))
   }
 
   render() {
-    const { accessToken, artists } = this.state
+    const { accessToken, artists, albums, itemData } = this.state
 
     return (
       <View style={styles.container}>
@@ -65,12 +73,15 @@ export default class App extends React.Component {
           contentContainerStyle={styles.scrollViewContent}
         >
           {
-            artists && artists.map((artist, index) => <ArtistaFavorito artista={artist} key={index} />)
+            itemData && itemData.map((item, index) =>
+              item.tof ? <ArtistaFavorito itemProp={item} key={index} /> : <FavouriteAlbum itemProp={item} key={index}/>
+            )
           }
         </ScrollView>
         <View style={styles.buttonsContainer}>
           {accessToken && <Button title="Open Spotify Auth" onPress={this._handleAuthButtonPress} />}
           {accessToken && <Button title="Get user artists" onPress={this._handleGetArtistsPress} />}
+          {accessToken && <Button title="Get user albums" onPress={this._handleGetAlbumsPress} />}
         </View>
       </View>
     )

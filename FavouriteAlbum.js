@@ -1,12 +1,12 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import { StyleSheet, Text, View, Image } from 'react-native'
+import React, {Component} from 'react'
+import { View, Text, StyleSheet, Image } from 'react-native'
 import { Ionicons } from './node_modules/@expo/vector-icons'
+import PropTypes from 'prop-types'
 
-export default class ArtistaFavorito extends Component {
-  render() {
+export default class FavouriteAlbum extends Component {
+  render () {
     const {
-      itemProp: { nombre, imagen, seguidores },
+      itemProp: { nombre, imagen, artista, seguidores }
     } = this.props
 
     return (
@@ -14,22 +14,24 @@ export default class ArtistaFavorito extends Component {
         <Image source={{uri: imagen}} style={styles.image} />
         <View style={styles.content}>
           <Text style={styles.name}>{nombre}</Text>
-          <Text style={styles.follow}><Ionicons name="md-contact" size={22} /> {seguidores}</Text>
+          <Text style={styles.artist}><Ionicons name="md-contact" size={22} /> {artista}</Text>
+          <Text style={styles.follow}><Ionicons name="ios-heart" size={22} /> {seguidores}</Text>
         </View>
       </View>
     )
   }
 }
 
-ArtistaFavorito.propTypes = {
+FavouriteAlbum.propTypes = {
   itemProp: PropTypes.shape({
     nombre: PropTypes.string,
     imagen: PropTypes.string,
+    artista: PropTypes.string,
     seguidores: PropTypes.number,
   }),
 }
 
-ArtistaFavorito.defaultProps = {
+FavouriteAlbum.defaultProps = {
   itemProp: {},
 }
 
@@ -39,11 +41,11 @@ const styles = StyleSheet.create({
     height: 'auto',
     backgroundColor: '#F5FCFF',
     flexDirection: 'column',
-    marginTop: 10,
+    marginTop: 15,
     marginBottom: 10,
   },
   image: {
-    height: 180,
+    height: 280,
     width: '100%',
     maxWidth: 250,
   },
@@ -66,9 +68,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 10,
   },
+  artist: {
+    fontWeight: '400',
+    marginLeft: 10,
+    marginVertical: 5,
+  },
   follow: {
     fontWeight: '400',
     marginLeft: 10,
     marginVertical: 5,
-  }
+  },
 })
+
+
+
