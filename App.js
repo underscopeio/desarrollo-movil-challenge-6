@@ -3,70 +3,89 @@ import { Button, StyleSheet, Text, View } from 'react-native'
 import { authorize, getUserArtistsPromise } from './spotify-api-client'
 import ArtistaFavorito from './ArtistaFavorito'
 import { ScrollView } from './node_modules/react-native-gesture-handler'
+import { createStackNavigator, createBottomTabNavigator, createSwitchNavigator, NavigationEvents  } from 'react-navigation'
 
-export default class App extends React.Component {
+import {
+  ActivityIndicator,
+  AsyncStorage,
+  StatusBar,
+} from 'react-native';
+
+
+class LoginScreen extends React.Component {
   state = {
     result: null,
     loggedIn: false,
   }
 
-  // NOTA: esta sería la versión de `componentDidMount` usando async/await
-  //
-  // async componentDidMount() {
-  //   const accessToken = await Expo.SecureStore.getItemAsync(SECURE_STORE_ACCESS_TOKEN_KEY)
-  //   if (accessToken) {
-  //     this.setState({ accessToken })
-  //   }
-  // }
+
 
   _handleAuthButtonPress = () => {
     authorize().then(loggedIn => {
-      console.warn('esta logueado?', loggedIn)
+      // console.warn('esta logueado?', loggedIn)
       this.setState({ loggedIn })
+      this.props.navigation.navigate('App');
+      
     })
   }
 
-  // NOTA: esta sería la versión de `_handleAuthButtonPress` usando async/await
-  //
-  // _handleAuthButtonPress = async () => {
-  //   const redirectUrl = AuthSession.getRedirectUrl()
-
-  //   const result = await AuthSession.startAsync({
-  //     authUrl:
-  //       `https://accounts.spotify.com/authorize?response_type=token` +
-  //       `&client_id=${SPOTIFY_CLIENT_ID}` +
-  //       `&redirect_uri=${encodeURIComponent(redirectUrl)}` +
-  //       `&scope=user-follow-read`,
-  //   })
-
-  //   await this.handleAuthResult(result)
-  // }
-
-  // NOTA: esta sería la versión de `handleAuthResult` usando async/await
-  //
-  // handleAuthResult = async ({ type, params }) => {
-  //   if (type !== 'success') {
-  //     console.warn('Algo salió mal', result)
-  //     return
-  //   }
-
-  //   const accessToken = params.access_token
-
-  //   await Expo.SecureStore.setItemAsync(SECURE_STORE_ACCESS_TOKEN_KEY, accessToken)
-  //   this.setState({ accessToken })
-  // }
 
   _handleGetArtistsPress = () => {
     getUserArtistsPromise().then(artistas => this.setState({ artistas }))
   }
 
+
   render() {
     const { loggedIn, artistas } = this.state
 
-    console.warn('artistas', artistas)
+    return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Text>LOGIN</Text>
+        <Button title="Ingresar con Spotify" onPress={this._handleAuthButtonPress} />
+      </View>
+    )
+  }
+}
+
+
+class ArtistasScreen extends React.Component {
+
+  state = {
+    result: null,
+    loggedIn: false,
+  }
+
+  
+
+
+  _handleAuthButtonPress = () => {
+    authorize().then(loggedIn => {
+      // console.warn('esta logueado?', loggedIn)
+      this.setState({ loggedIn })
+    })
+  }
+
+
+  _handleGetArtistsPress = () => {
+    getUserArtistsPromise().then(artistas => this.setState({ artistas }))
+  }
+
+
+  render() {
+
+    
+    const { loggedIn, artistas } = this.state
+
+    // console.warn('artistas', artistas)
 
     return (
       <View style={styles.container}>
+       
+       <NavigationEvents
+      onDidFocus={payload => getUserArtistsPromise().then(artistas => this.setState({ artistas }))  }
+      onWillBlur={payload => console.warn('will blur',payload)}
+      onDidBlur={payload => console.warn('did blur',payload)}
+    />
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.scrollView}
@@ -74,14 +93,60 @@ export default class App extends React.Component {
         >
           {artistas && artistas.map(artist => <ArtistaFavorito artista={artist} key={artist.nombre} />)}
         </ScrollView>
-        <View style={styles.buttonsContainer}>
-          <Button title="Login con Spotify" onPress={this._handleAuthButtonPress} />
-          <Button disabled={!loggedIn} title="Ver favoritos" onPress={this._handleGetArtistsPress} />
-        </View>
+
       </View>
     )
   }
 }
+
+const AppStack = createStackNavigator({ Home: ArtistasScreen });
+const AuthStack = createStackNavigator({ SignIn: LoginScreen });
+
+class AuthLoadingScreen extends React.Component {
+  
+  constructor() {
+    super();
+    this._bootstrapAsync();
+  }
+
+  // Fetch the token from storage then navigate to our appropriate place
+  _bootstrapAsync = async () => {
+    const userToken = await AsyncStorage.getItem('userToken');
+
+    // This will switch to the App screen or Auth screen and this loading
+    // screen will be unmounted and thrown away.
+    
+    
+    // this.props.navigation.navigate(userToken ? 'App' : 'Auth');
+  };
+
+  // Render any loading content that you like here
+  render() {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator />
+        <StatusBar barStyle="default" />
+      </View>
+    );
+  }
+}
+
+export default createSwitchNavigator(
+  {
+    AuthLoading: AuthLoadingScreen,
+    App: AppStack,
+    Auth: AuthStack,
+  },
+  {
+    initialRouteName: 'Auth',
+  }
+);
+
+
+
+
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -111,3 +176,4 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
 })
+
