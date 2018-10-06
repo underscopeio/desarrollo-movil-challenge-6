@@ -1,25 +1,13 @@
 import React from 'react'
 import { Button, StyleSheet, Text, View } from 'react-native'
-import { AuthSession } from 'expo'
-import { getUserArtistsPromise } from './spotify-api-client'
+import { authorize, getUserArtistsPromise } from './spotify-api-client'
 import ArtistaFavorito from './ArtistaFavorito'
 import { ScrollView } from './node_modules/react-native-gesture-handler'
-
-const SPOTIFY_CLIENT_ID = 'bb223824c29844c7999ac5bc0ab7fdff'
-const SECURE_STORE_ACCESS_TOKEN_KEY = 'spotifyAccessToken'
 
 export default class App extends React.Component {
   state = {
     result: null,
-    accessToken: null,
-  }
-
-  componentDidMount() {
-    Expo.SecureStore.getItemAsync(SECURE_STORE_ACCESS_TOKEN_KEY).then(accessToken => {
-      if (accessToken) {
-        this.setState({ accessToken })
-      }
-    })
+    loggedIn: false,
   }
 
   // NOTA: esta sería la versión de `componentDidMount` usando async/await
@@ -32,15 +20,10 @@ export default class App extends React.Component {
   // }
 
   _handleAuthButtonPress = () => {
-    const redirectUrl = AuthSession.getRedirectUrl()
-
-    AuthSession.startAsync({
-      authUrl:
-        `https://accounts.spotify.com/authorize?response_type=token` +
-        `&client_id=${SPOTIFY_CLIENT_ID}` +
-        `&redirect_uri=${encodeURIComponent(redirectUrl)}` +
-        `&scope=user-follow-read`,
-    }).then(result => this.handleAuthResult(result))
+    authorize().then(loggedIn => {
+      console.warn('esta logueado?', loggedIn)
+      this.setState({ loggedIn })
+    })
   }
 
   // NOTA: esta sería la versión de `_handleAuthButtonPress` usando async/await
@@ -59,19 +42,6 @@ export default class App extends React.Component {
   //   await this.handleAuthResult(result)
   // }
 
-  handleAuthResult = ({ type, params }) => {
-    if (type !== 'success') {
-      console.warn('Algo salió mal', result)
-      return
-    }
-
-    const accessToken = params.access_token
-
-    Expo.SecureStore.setItemAsync(SECURE_STORE_ACCESS_TOKEN_KEY, accessToken).then(accessToken => {
-      this.setState({ accessToken })
-    })
-  }
-
   // NOTA: esta sería la versión de `handleAuthResult` usando async/await
   //
   // handleAuthResult = async ({ type, params }) => {
@@ -87,11 +57,13 @@ export default class App extends React.Component {
   // }
 
   _handleGetArtistsPress = () => {
-    getUserArtistsPromise(this.state.accessToken).then(artistas => this.setState({ artistas }))
+    getUserArtistsPromise().then(artistas => this.setState({ artistas }))
   }
 
   render() {
-    const { accessToken, artistas } = this.state
+    const { loggedIn, artistas } = this.state
+
+    console.warn('artistas', artistas)
 
     return (
       <View style={styles.container}>
@@ -104,7 +76,7 @@ export default class App extends React.Component {
         </ScrollView>
         <View style={styles.buttonsContainer}>
           <Button title="Login con Spotify" onPress={this._handleAuthButtonPress} />
-          <Button disabled={!accessToken} title="Ver favoritos" onPress={this._handleGetArtistsPress} />
+          <Button disabled={!loggedIn} title="Ver favoritos" onPress={this._handleGetArtistsPress} />
         </View>
       </View>
     )
