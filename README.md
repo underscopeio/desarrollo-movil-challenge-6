@@ -13,6 +13,11 @@ Para poder resolver este challenge seguir los siguientes pasos
 
 ### Enunciado
 
+### Configuración Previa
+
+1. Cambiar el `SPOTIFY_CLIENT_ID` con su `clientId`
+1. Agregar la nueva `redirectUrl` en la configuración de Spotify
+
 #### Obteniendo datos de la API
 1. Crear un archivo `cliente-api-spotify.js` que exporte un método `obtenerArtistasFavoritos` con la siguiente _signature_
   ```js
