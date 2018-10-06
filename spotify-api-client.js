@@ -1,7 +1,8 @@
 import { AuthSession } from 'expo'
 
-const SPOTIFY_CLIENT_ID = 'bb223824c29844c7999ac5bc0ab7fdff'
-const SECURE_STORE_ACCESS_TOKEN_KEY = 'spotifyAccessToken'
+const SPOTIFY_CLIENT_ID = '1eec4b18983b40609a803fe6895ac7a6'
+const SECURE_STORE_ACCESS_TOKEN_KEY = 'BQCu5F-stJEgWqe6C9eiqnpxE2lAYuDoeehZGLBgJBYLtcY3sqz3KvTzLYgv32nmiC3qAxUGWtalm2IjFkuuycE8WaFNkwG6tImC-1EwXxtB75ZQxWrDJdrbbg3Mf7Z-kaUvTZSP6q7f0Edd15HUVT2kb3fT237nf7l9_zM38YOp1j11ii_fRRAgEI59xCcRo_yv3I_Heu2U2lZXVKD2nSSFJXWKAfhXRVVD272SwiATxS7uIQPHcYftlSCqfmgJBpFDi8TYpGsCsG8n8Q'
+
 
 let token
 
@@ -10,7 +11,7 @@ Expo.SecureStore.getItemAsync(SECURE_STORE_ACCESS_TOKEN_KEY).then(accessToken =>
 })
 
 export const authorize = () => {
-  console.warn('AUTH!')
+  //console.warn('AUTH!')
   const redirectUrl = AuthSession.getRedirectUrl()
 
   return AuthSession.startAsync({
@@ -45,7 +46,7 @@ export const getUserArtistsPromise = () => {
   })
     .then(response => response.json())
     .then(result => {
-      console.warn('resultado', result)
+      // console.warn('resultado', result)
       if (result.error && [401, 403].includes(result.error.status)) {
         throw new Error('Authorization error')
       }
